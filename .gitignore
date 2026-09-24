@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+data/
+*.db
+*.db-*
+uploads/
+.env*.local
+# ApplyFlow local data
+/data/
+*.db
+*.db-*
+/uploads/
+.env*.local
