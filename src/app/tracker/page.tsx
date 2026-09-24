@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Kanban, ExternalLink } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -22,6 +23,8 @@ export default function TrackerPage() {
   const [opps, setOpps] = useState<Opportunity[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [bulkTo, setBulkTo] = useState("applied");
 
   async function load() {
     try {
@@ -41,6 +44,25 @@ export default function TrackerPage() {
   useEffect(() => {
     load();
   }, []);
+
+  async function bulkStatus() {
+    if (!selected.length) return;
+    try {
+      await api("/api/opportunities/bulk", {
+        method: "POST",
+        body: JSON.stringify({ ids: selected, status: bulkTo }),
+      });
+      toast.success(`Moved ${selected.length} → ${bulkTo}`);
+      setSelected([]);
+      await load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed");
+    }
+  }
+
+  function toggle(id: string) {
+    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+  }
 
   async function setStatus(id: string, status: string) {
     try {
@@ -69,6 +91,22 @@ export default function TrackerPage() {
       <PageHeader
         title="Tracker"
         description="Saved → Queued → Applied → Interview → Offer / Rejected / Ghosted. Update status as you hear back."
+        breadcrumbs={[{ label: "Tracker" }]}
+        actions={
+          selected.length ? (
+            <div className="flex items-center gap-2">
+              <Select value={bulkTo} onValueChange={setBulkTo}>
+                <SelectTrigger className="h-9 w-36"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {TRACKER_STATUSES.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button onClick={bulkStatus}>Bulk ({selected.length})</Button>
+            </div>
+          ) : undefined
+        }
       />
 
       <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
@@ -117,11 +155,17 @@ export default function TrackerPage() {
                       <p className="px-2 py-6 text-center text-xs text-muted-foreground">Empty</p>
                     )}
                     {column.map((o) => (
-                      <Card key={o.id} className="border-border/60 bg-card/80">
+                      <Card key={o.id} className="border-border/60 bg-card/80 transition hover:-translate-y-0.5">
                         <CardContent className="space-y-3 p-3">
-                          <div>
-                            <p className="text-sm font-medium leading-snug">{o.title}</p>
-                            <p className="text-xs text-muted-foreground">{o.company}</p>
+                          <div className="flex items-start gap-2">
+                            <Checkbox checked={selected.includes(o.id)} onCheckedChange={() => toggle(o.id)} aria-label="Select" />
+                            <div>
+                              <p className="text-sm font-medium leading-snug">{o.title}</p>
+                              <p className="text-xs text-muted-foreground">{o.company}</p>
+                              {o.source && o.source !== "manual" && (
+                                <p className="mt-0.5 text-[10px] uppercase tracking-wide text-primary/80">{o.source}</p>
+                              )}
+                            </div>
                           </div>
                           <Select value={o.status} onValueChange={(v) => setStatus(o.id, v)}>
                             <SelectTrigger className="h-8 text-xs">

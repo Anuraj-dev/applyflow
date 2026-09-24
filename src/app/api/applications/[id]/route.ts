@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db, applications, opportunities, resumes } from "@/lib/db";
 import { nowIso, parseJson, toJson } from "@/lib/ids";
+import { logActivity } from "@/lib/activity";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -50,6 +51,13 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
   db.update(applications).set(updates).where(eq(applications.id, id)).run();
 
   if (body.status) {
+    logActivity({
+      kind: "status",
+      message: `Application → ${body.status}`,
+      opportunityId: row.opportunityId,
+      applicationId: id,
+      meta: { status: body.status },
+    });
     const map: Record<string, string> = {
       queued: "queued",
       ready: "queued",

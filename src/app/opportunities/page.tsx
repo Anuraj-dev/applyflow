@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -76,6 +77,27 @@ export default function OpportunitiesPage() {
       await load();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed");
+    }
+  }
+
+  async function autofillFromUrl() {
+    if (!form.url) {
+      toast.error("Paste a URL first");
+      return;
+    }
+    try {
+      const meta = await api<{ title?: string; company?: string; description?: string }>(
+        `/api/metadata?url=${encodeURIComponent(form.url)}`
+      );
+      setForm((f) => ({
+        ...f,
+        title: f.title || meta.title || "",
+        company: f.company || meta.company || "",
+        notes: f.notes || meta.description?.slice(0, 280) || "",
+      }));
+      toast.success("Filled from link metadata");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Metadata failed");
     }
   }
 
@@ -207,6 +229,7 @@ export default function OpportunitiesPage() {
                       onChange={(e) => setForm({ ...form, notes: e.target.value })}
                     />
                   </div>
+                  <Button type="button" variant="outline" onClick={autofillFromUrl}>Autofill from URL</Button>
                   <Button onClick={create}>Save opportunity</Button>
                 </div>
               </DialogContent>
@@ -260,6 +283,9 @@ export default function OpportunitiesPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="font-medium">{o.title}</h3>
                     <StatusBadge status={o.status} />
+                      {o.source && o.source !== "manual" && (
+                        <Badge variant="outline" className="text-[10px] uppercase">{o.source}</Badge>
+                      )}
                     <BadgeTone type={o.type} />
                   </div>
                   <p className="text-sm text-muted-foreground">

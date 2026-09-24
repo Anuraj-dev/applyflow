@@ -146,3 +146,39 @@
     color: transparent;
   }
 }
+
+/* Accent variants via data-accent on html */
+html[data-accent="violet"] {
+  --primary: oklch(0.68 0.2 300);
+  --ring: oklch(0.68 0.2 300);
+}
+html[data-accent="cyan"] {
+  --primary: oklch(0.72 0.14 210);
+  --ring: oklch(0.72 0.14 210);
+}
+html[data-accent="emerald"] {
+  --primary: oklch(0.72 0.15 160);
+  --ring: oklch(0.72 0.15 160);
+}
+html[data-accent="rose"] {
+  --primary: oklch(0.68 0.18 15);
+  --ring: oklch(0.68 0.18 15);
+}
+
+@layer utilities {
+  .glass-panel {
+    background: oklch(0.18 0.03 280 / 0.55);
+    backdrop-filter: blur(16px);
+    border: 1px solid oklch(0.68 0.2 285 / 0.12);
+  }
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+}
+
+/* Deeper dark surfaces */
+.dark {
+  --background: oklch(0.12 0.028 280);
+  --card: oklch(0.16 0.032 280);
+  --sidebar: oklch(0.1 0.03 280);
+}

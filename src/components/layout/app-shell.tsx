@@ -13,26 +13,37 @@ import {
   Kanban,
   Sparkles,
   Menu,
+  Compass,
+  Settings,
+  FilePenLine,
+  Keyboard,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { CommandPalette } from "@/components/command/command-palette";
+import { OnboardingWizard } from "@/components/onboarding/wizard";
+import { KeyboardShortcuts } from "@/components/command/keyboard-shortcuts";
+import { AccentLoader } from "@/components/layout/accent-loader";
 
 const nav = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/discover", label: "Discover", icon: Compass },
   { href: "/profile", label: "Profile", icon: User },
   { href: "/resumes", label: "Resumes", icon: FileText },
   { href: "/opportunities", label: "Opportunities", icon: Briefcase },
+  { href: "/templates", label: "Templates", icon: FilePenLine },
   { href: "/tailor", label: "Tailor", icon: Wand2 },
   { href: "/queue", label: "Queue", icon: ListChecks },
   { href: "/tracker", label: "Tracker", icon: Kanban },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
-    <nav className="flex flex-col gap-1 p-3">
+    <nav className="flex flex-col gap-0.5 p-3" aria-label="Primary">
       {nav.map((item) => {
         const active =
           item.href === "/"
@@ -45,7 +56,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+              "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               active
                 ? "bg-primary/15 text-primary"
                 : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
@@ -69,6 +80,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <div className="flex min-h-screen">
@@ -79,17 +91,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
           <div>
             <p className="text-sm font-semibold tracking-tight">ApplyFlow</p>
-            <p className="text-[11px] text-muted-foreground">Ethical apply OS</p>
+            <p className="text-[11px] text-muted-foreground">Apply command center</p>
           </div>
         </div>
         <div className="flex-1 overflow-y-auto">
           <NavLinks />
         </div>
-        <div className="border-t border-sidebar-border p-4">
+        <div className="border-t border-sidebar-border p-4 space-y-2">
           <div className="rounded-xl border border-primary/20 bg-primary/5 px-3 py-2.5 text-[11px] leading-relaxed text-muted-foreground">
             <span className="font-medium text-primary">Human-in-the-loop.</span> Review every packet.
-            No silent auto-submit to job boards.
+            No silent auto-submit.
           </div>
+          <p className="flex items-center gap-1.5 px-1 text-[10px] text-muted-foreground/80">
+            <Keyboard className="size-3" />
+            <kbd className="rounded border border-border/60 bg-muted/40 px-1">⌘K</kbd> command palette
+          </p>
         </div>
       </aside>
 
@@ -113,9 +129,34 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </SheetContent>
           </Sheet>
           <span className="font-semibold">ApplyFlow</span>
+          <div className="ml-auto">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs text-muted-foreground"
+              onClick={() =>
+                window.dispatchEvent(new CustomEvent("applyflow:open-palette"))
+              }
+            >
+              ⌘K
+            </Button>
+          </div>
         </header>
-        <main className="flex-1 px-4 py-6 md:px-8 md:py-8">{children}</main>
+        <main className="relative flex-1 px-4 py-6 md:px-8 md:py-8">
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.22 }}
+          >
+            {children}
+          </motion.div>
+        </main>
       </div>
+      <CommandPalette />
+      <KeyboardShortcuts />
+      <OnboardingWizard />
+      <AccentLoader />
     </div>
   );
 }

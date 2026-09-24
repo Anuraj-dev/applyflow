@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { db, applications, opportunities, resumes, profiles } from "@/lib/db";
 import { newId, nowIso, toJson } from "@/lib/ids";
 import { tailorApplication } from "@/lib/tailor";
+import { logActivity } from "@/lib/activity";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -39,6 +40,8 @@ export async function POST(req: NextRequest) {
       const status = action === "applied" ? "applied" : action === "ready" ? "ready" : "queued";
       db.insert(applications).values({
         id,
+        workspaceId: "local",
+        userId: "local",
         opportunityId,
         resumeId,
         status,
@@ -80,6 +83,12 @@ export async function POST(req: NextRequest) {
     const oppStatus = oppStatusMap[app.status] || opp.status;
     db.update(opportunities).set({ status: oppStatus, updatedAt: now }).where(eq(opportunities.id, opportunityId)).run();
 
+    logActivity({
+      kind: "queue",
+      message: `Queued packet for ${opp.title}`,
+      opportunityId,
+      applicationId: app.id,
+    });
     results.push(app);
   }
 

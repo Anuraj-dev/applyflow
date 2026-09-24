@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ExternalLink, ListChecks, CheckCircle2 } from "lucide-react";
+import { ExternalLink, ListChecks, CheckCircle2, Download } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { api } from "@/lib/api";
 import type { Application, ChecklistItem } from "@/lib/types";
+import { burstConfetti } from "@/lib/confetti";
 
 export default function QueuePage() {
   const [apps, setApps] = useState<Application[]>([]);
@@ -74,6 +75,10 @@ export default function QueuePage() {
       method: "PATCH",
       body: JSON.stringify({ status: "applied", applyNotes: notes ?? app.applyNotes }),
     });
+    try {
+      const s = await api<{ confetti?: boolean }>("/api/settings");
+      if (s.confetti !== false) burstConfetti();
+    } catch { burstConfetti(); }
     toast.success("Marked applied — nice work reviewing first");
     setActive(null);
     await load();
@@ -177,6 +182,16 @@ export default function QueuePage() {
                       </a>
                     </Button>
                   )}
+                  <Button variant="outline" size="sm" asChild>
+                    <a href={`/api/packets/${active.id}?format=markdown`} download>
+                      <Download className="mr-1 size-3.5" /> Export MD
+                    </a>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href={`/api/packets/${active.id}?format=pdf`} target="_blank" rel="noreferrer">
+                      <Download className="mr-1 size-3.5" /> Print / PDF
+                    </a>
+                  </Button>
                 </div>
 
                 <Card>

@@ -20,6 +20,7 @@ export type Profile = {
   preferredLocations: string[];
   salaryFloor: number | null;
   notes: string;
+  onboardingDone?: boolean;
   createdAt: string | null;
   updatedAt: string | null;
 };
@@ -72,11 +73,16 @@ export type Application = {
 export type Stats = {
   opportunities: Record<string, number>;
   applications: Record<string, number>;
+  bySource?: Record<string, number>;
+  funnel?: { stage: string; count: number }[];
+  weeklyApplied?: { label: string; count: number }[];
+  responseRate?: number;
   totals: {
     opportunities: number;
     applications: number;
     resumes: number;
     profileComplete: boolean;
+    onboardingDone?: boolean;
   };
   recent: {
     id: string;
@@ -84,6 +90,13 @@ export type Stats = {
     updatedAt: string;
     title?: string;
     company?: string;
+  }[];
+  activity?: {
+    id: string;
+    kind: string;
+    message: string;
+    createdAt: string;
+    opportunityId?: string | null;
   }[];
 };
 

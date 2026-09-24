@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-  Briefcase,
   FileText,
   ListChecks,
   User,
   ArrowRight,
-  Sparkles,
+  Compass,
+  Activity,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -37,33 +37,47 @@ export default function DashboardPage() {
       .catch((e) => setError(e.message));
   }, []);
 
+  const maxFunnel = Math.max(1, ...(stats?.funnel || []).map((f) => f.count));
+  const maxWeek = Math.max(1, ...(stats?.weeklyApplied || []).map((w) => w.count));
+
   return (
     <div>
       <PageHeader
         title="Dashboard"
-        description="Your ethical apply cockpit — prepare, tailor, review, then submit yourself."
+        description="Your apply command center — discover, tailor, review, submit yourself, track."
+        breadcrumbs={[{ label: "Dashboard" }]}
         actions={
-          <Button asChild>
-            <Link href="/opportunities">
-              Add opportunity <ArrowRight className="ml-1 size-4" />
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button asChild variant="secondary">
+              <Link href="/discover">
+                <Compass className="mr-1 size-4" /> Discover
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href="/opportunities">
+                Opportunities <ArrowRight className="ml-1 size-4" />
+              </Link>
+            </Button>
+          </div>
         }
       />
 
       {stats && (
-        <Card className="mb-8 glow-card border-primary/30 bg-primary/5">
+        <Card className="mb-8 glow-card border-primary/30 bg-gradient-to-br from-primary/10 via-card/80 to-violet-500/5">
           <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-primary">Next best action</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+                Next best action
+              </p>
               <p className="mt-1 text-sm text-foreground/90">
                 {!stats.totals.profileComplete
                   ? "Complete your profile so tailoring uses real skills and education."
                   : stats.totals.resumes === 0
                     ? "Upload a PDF resume to attach to application packets."
                     : stats.totals.opportunities === 0
-                      ? "Add your first opportunity (or import the sample CSV)."
-                      : (stats.applications?.queued || 0) > 0 || (stats.applications?.ready || 0) > 0
+                      ? "Discover roles (Remotive / Greenhouse) or add manually."
+                      : (stats.applications?.queued || 0) > 0 ||
+                          (stats.applications?.ready || 0) > 0
                         ? "Review queued packets, open the apply URL yourself, then mark Applied."
                         : "Select opportunities and Queue & tailor to prepare packets."}
               </p>
@@ -76,8 +90,9 @@ export default function DashboardPage() {
                     : stats.totals.resumes === 0
                       ? "/resumes"
                       : stats.totals.opportunities === 0
-                        ? "/opportunities"
-                        : (stats.applications?.queued || 0) > 0 || (stats.applications?.ready || 0) > 0
+                        ? "/discover"
+                        : (stats.applications?.queued || 0) > 0 ||
+                            (stats.applications?.ready || 0) > 0
                           ? "/queue"
                           : "/opportunities"
                 }
@@ -99,19 +114,19 @@ export default function DashboardPage() {
         {tiles.map((t, i) => (
           <motion.div
             key={t.key}
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
+            transition={{ delay: i * 0.04 }}
           >
-            <Card className="glow-card border-border/60 bg-card/70 backdrop-blur">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <Card className="glow-card border-border/60 bg-card/70 transition hover:-translate-y-0.5">
+              <CardHeader className="pb-1">
+                <CardTitle className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                   {t.label}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-semibold tabular-nums">
-                  {stats?.opportunities?.[t.key] ?? 0}
+                  {stats?.opportunities?.[t.key] ?? "—"}
                 </p>
               </CardContent>
             </Card>
@@ -119,67 +134,140 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="glow-card border-border/60 bg-card/70 lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base">Recent activity</CardTitle>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/tracker">Open tracker</Link>
-            </Button>
+      <div className="mb-8 grid gap-4 lg:grid-cols-3">
+        <Card className="glow-card border-border/60 bg-card/70 lg:col-span-1">
+          <CardHeader>
+            <CardTitle className="text-sm">Funnel</CardTitle>
           </CardHeader>
-          <CardContent>
-            {!stats?.recent?.length ? (
-              <div className="flex flex-col items-center gap-3 py-10 text-center text-muted-foreground">
-                <Sparkles className="size-8 text-primary/60" />
-                <p className="text-sm">No applications yet. Queue your first packet from Opportunities.</p>
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="/opportunities">Browse opportunities</Link>
-                </Button>
+          <CardContent className="space-y-2">
+            {(stats?.funnel || []).map((f) => (
+              <div key={f.stage} className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span className="capitalize text-muted-foreground">{f.stage}</span>
+                  <span className="tabular-nums font-medium">{f.count}</span>
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-muted/60">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500"
+                    style={{ width: `${(f.count / maxFunnel) * 100}%` }}
+                  />
+                </div>
               </div>
-            ) : (
-              <ul className="divide-y divide-border/60">
-                {stats.recent.map((r) => (
-                  <li key={r.id} className="flex items-center justify-between gap-3 py-3">
-                    <div className="min-w-0">
-                      <p className="truncate font-medium">{r.title || "Application"}</p>
-                      <p className="truncate text-xs text-muted-foreground">{r.company}</p>
-                    </div>
-                    <StatusBadge status={r.status} />
-                  </li>
-                ))}
-              </ul>
+            ))}
+            {!stats?.funnel?.length && (
+              <p className="text-xs text-muted-foreground">No funnel data yet.</p>
             )}
           </CardContent>
         </Card>
 
-        <div className="space-y-4">
-          <Card className="glow-card border-border/60 bg-card/70">
-            <CardHeader>
-              <CardTitle className="text-base">Quick links</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-2">
-              {[
-                { href: "/profile", icon: User, label: "Complete profile", hint: stats?.totals.profileComplete ? "Ready" : "Needs setup" },
-                { href: "/resumes", icon: FileText, label: "Resume vault", hint: `${stats?.totals.resumes ?? 0} files` },
-                { href: "/queue", icon: ListChecks, label: "Review queue", hint: `${stats?.applications?.ready ?? 0} ready` },
-                { href: "/opportunities", icon: Briefcase, label: "Opportunities", hint: `${stats?.totals.opportunities ?? 0} total` },
-              ].map((q) => (
-                <Link
-                  key={q.href}
-                  href={q.href}
-                  className="flex items-center gap-3 rounded-xl border border-border/50 bg-background/40 px-3 py-3 transition hover:border-primary/40 hover:bg-primary/5"
-                >
-                  <q.icon className="size-4 text-primary" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium">{q.label}</p>
-                    <p className="text-xs text-muted-foreground">{q.hint}</p>
-                  </div>
-                  <ArrowRight className="size-4 text-muted-foreground" />
-                </Link>
+        <Card className="glow-card border-border/60 bg-card/70 lg:col-span-1">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-sm">Weekly applied</CardTitle>
+            <span className="text-xs text-muted-foreground">
+              Response rate{" "}
+              <strong className="text-foreground">{stats?.responseRate ?? 0}%</strong>
+            </span>
+          </CardHeader>
+          <CardContent>
+            <div className="flex h-24 items-end gap-1.5">
+              {(stats?.weeklyApplied || []).map((w) => (
+                <div key={w.label} className="flex flex-1 flex-col items-center gap-1">
+                  <div
+                    className="w-full rounded-t-md bg-gradient-to-t from-indigo-600 to-violet-400"
+                    style={{ height: `${Math.max(4, (w.count / maxWeek) * 100)}%` }}
+                    title={`${w.count}`}
+                  />
+                  <span className="text-[9px] text-muted-foreground">{w.label}</span>
+                </div>
               ))}
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="glow-card border-border/60 bg-card/70 lg:col-span-1">
+          <CardHeader>
+            <CardTitle className="text-sm">Sources</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {Object.entries(stats?.bySource || {}).length === 0 && (
+              <p className="text-xs text-muted-foreground">Import from Discover to see breakdown.</p>
+            )}
+            {Object.entries(stats?.bySource || {})
+              .sort((a, b) => b[1] - a[1])
+              .map(([src, n]) => (
+                <div key={src} className="flex items-center justify-between text-sm">
+                  <span className="capitalize text-muted-foreground">{src}</span>
+                  <span className="tabular-nums font-medium">{n}</span>
+                </div>
+              ))}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { href: "/profile", icon: User, label: "Profile", hint: "Skills & education" },
+          { href: "/resumes", icon: FileText, label: "Resumes", hint: `${stats?.totals.resumes ?? 0} uploaded` },
+          { href: "/discover", icon: Compass, label: "Discover", hint: "Live job APIs" },
+          { href: "/queue", icon: ListChecks, label: "Queue", hint: "Review packets" },
+        ].map((q) => (
+          <Link key={q.href} href={q.href}>
+            <Card className="h-full border-border/60 bg-card/60 transition hover:-translate-y-0.5 hover:border-primary/40">
+              <CardContent className="flex items-center gap-3 p-4">
+                <div className="flex size-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                  <q.icon className="size-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">{q.label}</p>
+                  <p className="text-xs text-muted-foreground">{q.hint}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card className="glow-card border-border/60 bg-card/70">
+          <CardHeader>
+            <CardTitle className="text-sm">Recent applications</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {!stats?.recent?.length && (
+              <p className="text-sm text-muted-foreground">Queue something to see activity here.</p>
+            )}
+            {stats?.recent?.map((r) => (
+              <div key={r.id} className="flex items-center justify-between gap-3 text-sm">
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{r.title || "Application"}</p>
+                  <p className="text-xs text-muted-foreground">{r.company}</p>
+                </div>
+                <StatusBadge status={r.status} />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card className="glow-card border-border/60 bg-card/70">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Activity className="size-4" /> Timeline
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {!stats?.activity?.length && (
+              <p className="text-sm text-muted-foreground">Imports and status changes will land here.</p>
+            )}
+            {stats?.activity?.map((a) => (
+              <div key={a.id} className="border-l-2 border-primary/30 pl-3 text-sm">
+                <p className="text-foreground/90">{a.message}</p>
+                <p className="text-[11px] text-muted-foreground">
+                  {new Date(a.createdAt).toLocaleString()} · {a.kind}
+                </p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

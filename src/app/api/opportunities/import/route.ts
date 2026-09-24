@@ -61,6 +61,8 @@ export async function POST(req: NextRequest) {
     const id = newId();
     db.insert(opportunities).values({
       id,
+      workspaceId: "local",
+      userId: "local",
       title,
       company,
       url: r.url || r.link || "",
