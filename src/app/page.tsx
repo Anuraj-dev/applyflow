@@ -51,6 +51,44 @@ export default function DashboardPage() {
         }
       />
 
+      {stats && (
+        <Card className="mb-8 glow-card border-primary/30 bg-primary/5">
+          <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary">Next best action</p>
+              <p className="mt-1 text-sm text-foreground/90">
+                {!stats.totals.profileComplete
+                  ? "Complete your profile so tailoring uses real skills and education."
+                  : stats.totals.resumes === 0
+                    ? "Upload a PDF resume to attach to application packets."
+                    : stats.totals.opportunities === 0
+                      ? "Add your first opportunity (or import the sample CSV)."
+                      : (stats.applications?.queued || 0) > 0 || (stats.applications?.ready || 0) > 0
+                        ? "Review queued packets, open the apply URL yourself, then mark Applied."
+                        : "Select opportunities and Queue & tailor to prepare packets."}
+              </p>
+            </div>
+            <Button asChild>
+              <Link
+                href={
+                  !stats.totals.profileComplete
+                    ? "/profile"
+                    : stats.totals.resumes === 0
+                      ? "/resumes"
+                      : stats.totals.opportunities === 0
+                        ? "/opportunities"
+                        : (stats.applications?.queued || 0) > 0 || (stats.applications?.ready || 0) > 0
+                          ? "/queue"
+                          : "/opportunities"
+                }
+              >
+                Continue <ArrowRight className="ml-1 size-4" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {error && (
         <p className="mb-4 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}

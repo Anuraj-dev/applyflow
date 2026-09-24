@@ -58,6 +58,18 @@ export default function QueuePage() {
   }
 
   async function markApplied(app: Application, notes?: string) {
+    const incomplete = (app.checklist || []).filter((c) => !c.done);
+    if (incomplete.length) {
+      const ok = confirm(
+        `${incomplete.length} checklist item(s) still open. Mark Applied only after you submitted yourself on the company site. Continue?`
+      );
+      if (!ok) return;
+    } else {
+      const ok = confirm(
+        "Confirm you already submitted this application yourself (ApplyFlow does not auto-submit). Mark as Applied?"
+      );
+      if (!ok) return;
+    }
     await api(`/api/applications/${app.id}`, {
       method: "PATCH",
       body: JSON.stringify({ status: "applied", applyNotes: notes ?? app.applyNotes }),
