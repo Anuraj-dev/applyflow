@@ -14,3 +14,11 @@ Ten concrete improvements for ApplyFlow, an ethical, local-first job-apply works
 10. **Make privacy and ethics discoverable.** Add a settings/control center for local-data export and deletion, explain what is never auto-submitted, and show a persistent, non-blocking “review before you apply” reminder.
 
 These ideas prioritize clarity, user control, and transparent human-in-the-loop decisions without introducing scraping or silent submission.
+
+## Accessibility
+
+- Increase muted text, secondary labels, and status-chip contrast against the dark indigo surfaces.
+- Keep focus states obvious and support a logical keyboard path through the dashboard, dialogs, review tabs, and tracker controls.
+- Pair status colors with text or icons so deadlines, success, warnings, and errors never rely on color alone.
+- Respect reduced-motion preferences and provide clear non-motion loading and confirmation feedback.
+- Add explicit form labels, inline error summaries, and screen-reader names for icon buttons and tooltips.
