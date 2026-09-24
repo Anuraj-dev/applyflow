@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db, profiles } from "@/lib/db";
-import { newId, nowIso, toJson, parseJson } from "@/lib/ids";
+import { nowIso, toJson, parseJson } from "@/lib/ids";
 
 const PROFILE_ID = "default";
 
