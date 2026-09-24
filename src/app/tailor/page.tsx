@@ -30,8 +30,8 @@ type TailorResponse = {
 export default function TailorPage() {
   const [opps, setOpps] = useState<Opportunity[]>([]);
   const [resumes, setResumes] = useState<Resume[]>([]);
-  const [opportunityId, setOpportunityId] = useState("");
-  const [resumeId, setResumeId] = useState("");
+  const [opportunityId, setOpportunityId] = useState<string | undefined>(undefined);
+  const [resumeId, setResumeId] = useState<string | undefined>(undefined);
   const [result, setResult] = useState<TailorResponse | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -58,7 +58,7 @@ export default function TailorPage() {
     try {
       const data = await api<TailorResponse>("/api/tailor", {
         method: "POST",
-        body: JSON.stringify({ opportunityId, resumeId: resumeId || undefined, save: true }),
+        body: JSON.stringify({ opportunityId, resumeId, save: true }),
       });
       setResult(data);
       toast.success("Packet tailored and saved to queue");
@@ -110,11 +110,15 @@ export default function TailorPage() {
           </div>
           <div className="space-y-1.5">
             <Label>Resume</Label>
-            <Select value={resumeId} onValueChange={setResumeId}>
+            <Select
+              value={resumeId}
+              onValueChange={(v) => setResumeId(v === "__none__" ? undefined : v)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Default resume" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="__none__">Use default / none</SelectItem>
                 {resumes.map((r) => (
                   <SelectItem key={r.id} value={r.id}>
                     {r.label}

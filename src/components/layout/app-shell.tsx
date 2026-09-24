@@ -85,8 +85,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="flex-1 overflow-y-auto">
           <NavLinks />
         </div>
-        <div className="border-t border-sidebar-border p-4 text-[11px] leading-relaxed text-muted-foreground">
-          Review every packet. No silent auto-submit to job boards.
+        <div className="border-t border-sidebar-border p-4">
+          <div className="rounded-xl border border-primary/20 bg-primary/5 px-3 py-2.5 text-[11px] leading-relaxed text-muted-foreground">
+            <span className="font-medium text-primary">Human-in-the-loop.</span> Review every packet.
+            No silent auto-submit to job boards.
+          </div>
         </div>
       </aside>
 

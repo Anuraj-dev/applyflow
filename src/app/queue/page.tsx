@@ -86,6 +86,10 @@ export default function QueuePage() {
 
   return (
     <div>
+      <div className="mb-4 rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-3 text-sm text-indigo-100">
+        <strong className="font-semibold">Ethics note:</strong> ApplyFlow never auto-submits to LinkedIn, Indeed, or other boards.
+        Open the apply URL, review your packet, then submit yourself and mark Applied here.
+      </div>
       <PageHeader
         title="Application queue"
         description="Batch-review packets, open the apply URL yourself, complete the checklist, then mark Applied. ApplyFlow never auto-submits."
