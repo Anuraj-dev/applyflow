@@ -1,86 +1,73 @@
-# ApplyFlow
+<h1 align="center">ApplyFlow</h1>
 
-**Ethical apply command center** — discover openings from public APIs, prepare profile & resumes, auto-tailor packets from *your* facts, review in batch, submit yourself, and track outcomes.
+<p align="center">
+  A command center for your job search. Find open roles, prepare each application, and track it to an outcome.<br />
+  ApplyFlow never submits for you. You open the apply link, send the application yourself, and then mark it Applied.
+</p>
 
-> ApplyFlow is **not** a silent spam bot. It never auto-submits to LinkedIn, Indeed, or other boards. You always open the apply URL and choose to send.
+<p align="center">
+  <a href="#running-it">Run it locally</a>
+  ·
+  <a href="#configuration">Keys and configuration</a>
+</p>
 
-Self-host today. Soft multi-user schema (`workspace_id` / `user_id` = `local`) so you can sell or SaaS later — **no paywall, no billing, no Stripe in this build**.
+<p align="center">
+  <img src="screenshots/dashboard.png" alt="The ApplyFlow dashboard with sample data: one queued internship at Acme Labs, a prompt to upload a resume, and a count for each status" />
+</p>
 
-## Vision
+ApplyFlow works through openings one packet at a time. It pulls live roles from Remotive, Arbeitnow, and any company's public Greenhouse or Lever board. You pick the roles you want, and ApplyFlow builds a packet for each one: a cover letter, highlights and five common answers, written from the profile you enter. You review the batch, open each apply URL yourself, and mark the application Applied once you have sent it.
 
-1. Durable **profile** (skills, education, work auth, preferences)
-2. Labeled **resume PDFs**
-3. **Discover** live roles (Remotive, Arbeitnow, Greenhouse/Lever boards) + manual/CSV
-4. **Tailor** cover letters, highlights, FAQ answers — never invent credentials
-5. **Queue** packets with checklists → confirm → Mark Applied
-6. **Track** Saved → Queued → Applied → Interview → Offer / Rejected / Ghosted
-7. **Export** packets (Markdown / print-PDF) and full JSON/CSV backups
+It is a Next.js 15 app that runs on your machine, with SQLite through better-sqlite3 and Drizzle ORM. Your data stays in a local `data/` folder. There is no account and no billing. The only keys are optional, and they unlock two more job sources.
 
-## Stack
+## What you get
 
-- Next.js 15 (App Router) + TypeScript + Tailwind CSS v4 + shadcn/ui
-- SQLite via better-sqlite3 + Drizzle ORM (`data/applyflow.db`, WAL)
-- Framer Motion + Lucide + Geist
-- Dark-first indigo / violet (accent switcher in Settings)
+- **Live roles from public sources only.** Remotive and Arbeitnow need no key. Greenhouse and Lever read a company's public board from its slug or URL. There is no LinkedIn or Indeed integration. Results are cached in SQLite for 20 minutes, and each source accepts one search every 1.5 seconds.
+- **No duplicate saves.** Imports compare URLs after removing the hash, the UTM tags and `gh_src`, then lowercasing the result. Roles you already saved are skipped on import and flagged in Discover.
+- **Packets built from your profile.** The tailor matches your skills against the job title, company, description and your notes. It writes a cover letter, up to five highlights and five common answers. Skill matches come only from your profile and the posting. An empty profile field shows as a bracketed prompt, such as `[Add salary floor to profile]`.
+- **A checklist before every Mark Applied.** Each packet starts with six steps, from re-reading the posting to confirming the resume and opening the apply URL. Mark Applied asks you to confirm, and it warns you when steps are still open.
+- **Labeled resumes.** Upload PDF versions, give each one a label, and set a default. New packets use the default unless you choose another. Only PDF files are accepted.
+- **A tracker and a dashboard.** Each opportunity moves through saved, queued, applied, interview, offer, rejected and ghosted. The tracker changes status in bulk. The dashboard shows the funnel, the last eight weeks of applications, and a response rate: interviews, offers and rejections divided by applied.
+- **Export everything.** Settings exports JSON with every table, or a CSV of opportunities, and the JSON restores through the same page. Resume PDFs are not in the export, so keep a copy of those files.
+- **Keyboard first.** Press `g` and then a letter to jump between pages, such as `g` then `q` for the queue. Ctrl+K or Cmd+K opens the command palette.
 
-## Setup
+## Running it
 
-```bash
-# Node 20+ recommended
+Use Node.js 20 or newer.
+
+```sh
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000). A first-run checklist walks you through your profile, a resume, your first opportunity and your first packet.
 
-Optional keys (all Discover free sources work without them):
+For a production build:
 
-```bash
-cp .env.example .env
-# OPENAI_API_KEY=          # optional LLM polish; deterministic tailor always works
-# USAJOBS_API_KEY= + USAJOBS_USER_AGENT=
-# ADZUNA_APP_ID= + ADZUNA_APP_KEY=
+```sh
+npm run build
+npm start
 ```
 
-## Scripts
+`npm test` runs the two Node test files in `tests/`.
 
-| Script | Purpose |
-|--------|---------|
-| `npm run dev` | Dev server |
-| `npm run build` / `start` | Production |
-| `npm test` | Unit tests (dedupe + tailor contract) |
-| `npm run db:studio` | Drizzle Studio |
+## Configuration
 
-## Features
+Nothing is required. Discover works with no keys at all. To add the two optional sources, copy the example file and fill in the values you need. Restart `npm run dev` after you edit `.env`.
 
-- **Discover** — Remotive & Arbeitnow (free), Greenhouse/Lever company boards, optional USAJobs/Adzuna; 20m cache; URL dedupe; saved searches; multi-select import → Saved
-- **Opportunities** — manual add, CSV, OG metadata autofill from URL, source badges
-- **Templates** — editable cover letter library with `{{name}}` / `{{title}}` / `{{company}}` / `{{skills}}`
-- **Tailor + Queue** — human confirm before Mark Applied; confetti-lite; packet MD/PDF export
-- **Tracker** — kanban + bulk status changes
-- **Dashboard** — funnel, weekly applied sparkline, response rate, source breakdown, activity timeline
-- **Settings** — accent theme, JSON/CSV export, restore
-- **⌘K** command palette · `g` then `d/i/o/q/k/s` jumps · first-run onboarding checklist
+```sh
+cp .env.example .env
+```
 
-## Demo: Discover → Queue
+| Variable | Purpose |
+| --- | --- |
+| `USAJOBS_API_KEY` | Turns on the USAJobs source. Get a free key at developer.usajobs.gov. |
+| `USAJOBS_USER_AGENT` | Email address sent with each USAJobs request. Needed with the key. |
+| `ADZUNA_APP_ID` | Turns on Adzuna. Needs `ADZUNA_APP_KEY` too. Free developer account. |
+| `ADZUNA_APP_KEY` | Adzuna key, paired with `ADZUNA_APP_ID`. |
+| `ADZUNA_COUNTRY` | Adzuna country code. Defaults to `us`. |
 
-1. Open **Discover** → source **Remotive**, keywords `software intern`, enable internship filter → Search
-2. Multi-select roles → **Import selected** (lands as Saved, deduped by URL)
-3. Or paste Greenhouse board `stripe` → Search → import
-4. **Opportunities** → select → Queue & tailor
-5. **Queue** → Review packet → Open apply URL yourself → checklist → **Mark Applied**
+## Your data
 
-## Ethics
-
-- No LinkedIn / Indeed scraping
-- No auto-submit to third-party job boards
-- Tailoring only uses facts from your profile + JD text
-- You remain accountable for every application you send
-
-## Data
-
-All data stays under `data/` (gitignored). Soft SaaS-ready columns default to `local`.
-
-## License
-
-MIT — built for Raja (Anuraj-dev).
+- The first run creates `data/applyflow.db`, a SQLite database in WAL mode, and `data/resumes/` for uploaded PDFs. The `data/` folder is in `.gitignore`.
+- Each user table carries `workspace_id` and `user_id`, both set to `local`. The schema is ready for more accounts, but only one workspace exists today.
+- Outbound requests go to the job APIs and company boards you use. They also go to any link you paste into the opportunity form, which is fetched for its title and Open Graph tags.
