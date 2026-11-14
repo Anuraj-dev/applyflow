@@ -71,3 +71,7 @@ cp .env.example .env
 - The first run creates `data/applyflow.db`, a SQLite database in WAL mode, and `data/resumes/` for uploaded PDFs. The `data/` folder is in `.gitignore`.
 - Each user table carries `workspace_id` and `user_id`, both set to `local`. The schema is ready for more accounts, but only one workspace exists today.
 - Outbound requests go to the job APIs and company boards you use. They also go to any link you paste into the opportunity form, which is fetched for its title and Open Graph tags.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
